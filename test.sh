@@ -41,6 +41,7 @@ $PY tests/test_x11.py     # opens real windows under X11, skips elsewhere
 $PY tests/test_cocoa.py   # opens real windows on macOS, skips elsewhere
 $PY tests/test_win32.py   # opens real windows on Windows, skips elsewhere
 $PY tests/test_asmx11.py  # raw assembly on Linux/x86-64, Python elsewhere
+$PY tests/test_plumbing.py  # the arithmetic behind all three, everywhere
 
 echo
 echo "all suites passed"
