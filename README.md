@@ -132,6 +132,15 @@ that costs you every mouse click. Each suite skips cleanly off its own
 platform, so all three run everywhere and the two that cannot do anything say
 so.
 
+| | |
+|---|---|
+| `test_x11.py` | 51 — 27 of them against a live server |
+| `test_win32.py` | 30 |
+| `test_cocoa.py` | 20 |
+| `test_plumbing.py` | 19 — the arithmetic and the chooser, on every platform |
+| `test_asmx11.py` | the kernel against its own fallback, at every depth |
+| `x11_shot.py` | draw, present, and ask the server what is on the window |
+
 ```
 ./test.sh
 ```
