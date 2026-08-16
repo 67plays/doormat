@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "doormat"
+version = "0.1.0"
+description = "Native windows, input and an event loop, through ctypes alone"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "67plays" }]
+license-files = ["LICENSE"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: User Interfaces",
+    "Environment :: X11 Applications",
+    "Environment :: Win32 (MS Windows)",
+    "Environment :: MacOS X :: Cocoa",
+]
+
+# Nothing, and there is nowhere for anything to creep in: every window here
+# is `ctypes` against a library the operating system already ships -- libX11,
+# user32/gdi32, AppKit -- and the only compiled thing in the package is one
+# hand-written assembly kernel that builds from source on the machine that
+# wants it, or is skipped.
+#
+# Nothing here draws, either. A window asks the object it was handed for a
+# surface of packed RGB and puts that on the screen, which is why a package
+# whose entire job is pixels has no imaging dependency: the pixels arrive
+# already made.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/67plays/doormat"
+
+[tool.setuptools]
+packages = ["doormat"]
+
+# The assembly ships as source, always. It is compiled on first use into a
+# cache keyed by a hash of the file, so a build that could not see it would
+# not fail -- it would quietly fall back to the Python loop and be slower for
+# reasons nobody could find.
+[tool.setuptools.package-data]
+doormat = ["asm/*.S"]

@@ -1,0 +1,99 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # All three suites on all three platforms, because a window backend can
+  # only be proved on the system it is for -- and because the other two have
+  # to import cleanly and skip with a reason everywhere else, which is the
+  # thing that quietly rots when nobody runs them.
+  #
+  # No Xvfb here: this job is the headless half. The Linux windows get a real
+  # server in the `x11` job below.
+  test:
+    name: ${{ matrix.os }} py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, python: '3.9' }
+          - { os: ubuntu-latest, python: '3.14' }
+          - { os: macos-latest, python: '3.12' }
+          - { os: macos-latest, python: '3.14' }
+          - { os: windows-latest, python: '3.12' }
+          - { os: windows-latest, python: '3.14' }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: pyflakes
+        run: |
+          python -m pip install -q pyflakes
+      - name: suites
+        run: ./test.sh
+        env:
+          PYTHON: python
+
+  # The one job with a display. Everything the backend does to a pixel
+  # between our framebuffer and the screen only has a right answer relative
+  # to a specific visual, so this runs against two of them.
+  x11:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: install Xvfb
+        run: sudo apt-get install -y xvfb
+
+      # 24-bit TrueColor: what every desktop actually runs, and the format
+      # the backend converts to with no per-pixel work.
+      - name: X11 tests at depth 24
+        run: |
+          xvfb-run -a --server-args="-screen 0 1600x1200x24" \
+            ./test.sh
+        env:
+          PYTHON: python
+
+      # 16-bit 5-6-5, which no whole-byte layout can describe, so this is the
+      # only thing that ever runs the slow per-channel path -- and the
+      # assembly kernel written for it -- against a real server.
+      - name: X11 tests at depth 16
+        run: |
+          xvfb-run -a --server-args="-screen 0 1600x1200x16" \
+            python tests/test_x11.py
+        env:
+          DOORMAT_QUIET: '1'
+          PYTHONPATH: ${{ github.workspace }}
+
+      # The proof from the far end: draw a test card, present it, and ask the
+      # server what is on the window. Checked in the script -- the upload is
+      # for a human, not for the build.
+      - name: Photograph a real X11 window
+        run: |
+          for depth in 24 16; do
+            xvfb-run -a --server-args="-screen 0 1600x1200x${depth}" \
+              python tests/x11_shot.py artifacts/x11-window-${depth}.png
+          done
+        env:
+          DOORMAT_QUIET: '1'
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Upload the windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: x11-windows
+          path: artifacts/*.png
+          if-no-files-found: error

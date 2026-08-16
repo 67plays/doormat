@@ -1,0 +1,10 @@
+# test.sh runs on the Windows job too -- the runner has bash, and there is
+# nothing in the suite that needs anything else. A checkout that helpfully
+# gave it CRLF line endings would fail at the shebang, with an error naming
+# a file that does not exist.
+*.sh text eol=lf
+
+# The assembly is compiled on the machine that wants it, into a cache keyed
+# by a hash of this file. Translated line endings would not stop it building
+# -- they would just quietly give the same source two different names.
+*.S text eol=lf
