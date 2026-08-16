@@ -380,8 +380,10 @@ def test_a_dense_window_is_measured_in_device_pixels():
         # 320x240 CSS pixels at 2x, allocated in the device pixels they cover.
         canvas = support.Canvas(640, 480, support.rgb("#ffffff"))
         win.canvas = canvas
-        assert canvas.device_size() == (640, 480), \
-            "the buffer is %r" % (canvas.device_size(),)
+        # And the window agrees that is the size to allocate: a to_device
+        # that disagreed would be a window asking for the wrong buffer.
+        assert win.to_device(320, 240) == (640, 480), \
+            "the window would ask for %r" % (win.to_device(320, 240),)
         win.present()
         assert len(win._frame) == 640 * 480 * 4
         assert win._bitmap.bmiHeader.biWidth == 640

@@ -261,7 +261,11 @@ def test_the_frame_is_pushed_at_the_displays_own_resolution():
             canvas = support.Canvas(1800, 1200, support.rgb("#654321"))
             win.canvas = canvas
             win.present()
-            assert canvas.device_size() == (1800, 1200), canvas.device_size()
+            # The multiplication above is the caller's, so the window has
+            # to agree with it -- a to_device() that disagreed would be a
+            # window asking every caller for the wrong buffer.
+            assert win.to_device(900, 600) == (1800, 1200), \
+                "the window would ask for %r" % (win.to_device(900, 600),)
             assert len(win._buffers[-1]) == 1800 * 1200 * 3, \
                 "the bytes handed to CoreGraphics are not the buffer's"
             size = cocoa.msg(cocoa.msg(win._view, "image"), "size",

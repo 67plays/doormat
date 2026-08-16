@@ -32,8 +32,8 @@ jobs:
           - { os: windows-latest, python: '3.12' }
           - { os: windows-latest, python: '3.14' }
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
       - name: pyflakes
@@ -51,8 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: install Xvfb
@@ -92,7 +92,7 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
 
       - name: Upload the windows
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: x11-windows
           path: artifacts/*.png
